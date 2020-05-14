@@ -1,97 +1,99 @@
-package ru.geekbrains.stargame.screen;
+package ru.geekbrains.screen;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Matrix3;
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 
-import org.w3c.dom.css.Rect;
-
-import ru.geekbrains.stargame.base.BaseScreen;
+import ru.geekbrains.base.BaseScreen;
+import ru.geekbrains.math.Rect;
+import ru.geekbrains.sprite.Background;
+import ru.geekbrains.sprite.ButtonExit;
+import ru.geekbrains.sprite.ButtonPlay;
+import ru.geekbrains.sprite.Star;
 
 public class MenuScreen extends BaseScreen {
 
-    public static final float SPEED = 1.f;
-    private Texture img;
-    private Texture imgWallpaper;
-    private Vector2 pos;
-    private Vector2 v;
-    private Vector2 gravity;
-    private Vector2 touch;
-    private Vector2 velocity;
-    private Vector2 position;
-    private Vector2 temp;
+    private final Game game;
+    private Texture bg;
+    private Background background;
+    private TextureAtlas atlas;
+    private ButtonExit buttonExit;
+    private ButtonPlay buttonPlay;
+    private Star[] stars;
 
-
-
-    private Rect screenBounds;
-    private Rect worldBounds;
-    private Rect glBounds;
-
-    private Matrix4 worldToGl;
-
-    private Matrix3 screenToWorld;
+    public MenuScreen(Game game) {
+        this.game = game;
+    }
 
     @Override
     public void show() {
         super.show();
-        imgWallpaper = new Texture("grass.jpg");
-        img = new Texture("badlogic.jpg");
-        velocity = new Vector2(0,0);
-        position = new Vector2(0,0);
-        pos = new Vector2();
-        v = new Vector2(1, 1);
-        gravity = new Vector2(0, -0.005f);
-        touch = new Vector2();
+        bg = new Texture("textures/bg.png");
+        background = new Background(bg);
+        atlas = new TextureAtlas(Gdx.files.internal("textures/menuAtlas.tpack"));
+        buttonExit = new ButtonExit(atlas);
+        buttonPlay = new ButtonPlay(atlas, game);
+        stars = new Star[256];
+        for (int i = 0; i < stars.length; i++) {
+            stars[i] = new Star(atlas);
+        }
+    }
+
+    @Override
+    public void resize(Rect worldBounds) {
+        background.resize(worldBounds);
+        buttonExit.resize(worldBounds);
+        buttonPlay.resize(worldBounds);
+        for (Star star : stars) {
+            star.resize(worldBounds);
+        }
     }
 
     @Override
     public void render(float delta) {
-
-
         super.render(delta);
-        //pos.add(v);
-        //v.add(gravity);
-        temp.set(touch);
-        if (temp.sub(position).len() > SPEED){
-            position.add(velocity);
-        }else{
-            position.set(touch);
-            velocity.setZero();
-        }
-        batch.begin();
-        batch.draw(imgWallpaper, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        batch.draw(img, pos.x, pos.y);
-        batch.end();
+        update(delta);
+        draw();
     }
 
     @Override
     public void dispose() {
-        imgWallpaper.dispose();
-        img.dispose();
+        bg.dispose();
+        atlas.dispose();
         super.dispose();
     }
 
-//   @Override
-//   public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-//       touch.set(screenX, Gdx.graphics.getHeight() - screenY);
-//       System.out.println("touchDown touch.x = " + touch.x + " touch.y = " + touch.y);
-//       pos.set(touch);
-//       return super.touchDown(screenX, screenY, pointer, button);
-//   }
-
     @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        super.touchDown(screenX, screenY, pointer, button);
-        touch.set(screenX, Gdx.graphics.getHeight() - screenY);
-        velocity.set(touch.cpy().sub(position).setLength(SPEED));
+    public boolean touchDown(Vector2 touch, int pointer, int button) {
+        buttonExit.touchDown(touch, pointer, button);
+        buttonPlay.touchDown(touch, pointer, button);
         return false;
     }
 
     @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        super.touchUp(screenX, screenY, pointer, button);
+    public boolean touchUp(Vector2 touch, int pointer, int button) {
+        buttonExit.touchUp(touch, pointer, button);
+        buttonPlay.touchUp(touch, pointer, button);
         return false;
     }
+
+    private void update(float delta) {
+        for (Star star : stars) {
+            star.update(delta);
+        }
+    }
+
+    private void draw() {
+        batch.begin();
+        background.draw(batch);
+        for (Star star : stars) {
+            star.draw(batch);
+        }
+        buttonExit.draw(batch);
+        buttonPlay.draw(batch);
+        batch.end();
+    }
+
 }
