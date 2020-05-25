@@ -14,6 +14,7 @@ import ru.geekbrains.sprite.Star;
 
 public class MenuScreen extends BaseScreen {
 
+
     private final Game game;
     private Texture bg;
     private Background background;
@@ -94,5 +95,4 @@ public class MenuScreen extends BaseScreen {
         buttonPlay.draw(batch);
         batch.end();
     }
-
 }
