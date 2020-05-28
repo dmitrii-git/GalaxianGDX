@@ -1,6 +1,5 @@
 package ru.geekbrains.sprite;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
 import ru.geekbrains.base.ScaledButton;
@@ -9,26 +8,38 @@ import ru.geekbrains.screen.GameScreen;
 
 public class ButtonNewGame extends ScaledButton {
 
-    private final Game game;
+    private static final float ANIMATE_INTERVAL = 1f;
 
-    private static final float MARGIN = 0.05f;
+    private float animateTimer;
+    private boolean scaleUp = true;
+    private GameScreen gameScreen;
 
-    public ButtonNewGame(TextureAtlas atlas, Game game) {
+    public ButtonNewGame(TextureAtlas atlas, GameScreen gameScreen) {
         super(atlas.findRegion("button_new_game"));
-        this.game = game;
+        this.gameScreen = gameScreen;
+    }
+
+    @Override
+    public void update(float delta) {
+        animateTimer += delta;
+        if (animateTimer >= ANIMATE_INTERVAL) {
+            animateTimer = 0f;
+            scaleUp = !scaleUp;
+        }
+        if (scaleUp) {
+            setScale(getScale() + 0.003f);
+        } else {
+            setScale(getScale() - 0.003f);
+        }
     }
 
     @Override
     public void resize(Rect worldBounds) {
-        setHeightProportion(0.25f);
-        setBottom(worldBounds.getBottom() + MARGIN);
-        setLeft(worldBounds.getLeft() + MARGIN);
+        setHeightProportion(0.05f);
     }
 
     @Override
     public void action() {
-        game.setScreen(new GameScreen());
+        gameScreen.startNewGame();
     }
 }
-
-
